@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+{% if objects %}
+  <table id='result' class='display'>
+    <thead>
+      <tr>
+      {% for header in headers %}
+        <th>{{header}}</th>
+      {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>
+    {% for object in objects %}
+      <tr>
+    {% for val in object %}
+        <td>{{val}}</td>
+      {% endfor %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+</body>
+</html>
