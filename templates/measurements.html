@@ -12,6 +12,7 @@
     </style>
 </head>
 <body>
+ <a href="javascript:history.back()">Back</a>
   <table id='result' class='display'>
     <thead>
       <tr>
@@ -27,7 +28,7 @@
       <tr>
 
     {% for val in object %}
-        <td><a href="stats/{{ object.0 }}">{{val}}</a></td>
+        <td>{{val}}</td>
       {% endfor %}
       </tr>
 

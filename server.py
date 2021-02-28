@@ -1,13 +1,14 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, jsonify, render_template, flash, redirect, url_for, request, session
 from tensorflow.keras.models import load_model
 import numpy as np
-from database import Database
+from database import Database, User
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret-key-goes-here'
 model = load_model('network.h5')
 
 journeys = dict()
-
 
 def transform(array):
     return array.reshape(array.shape[0], 2, 1)
@@ -49,7 +50,6 @@ def predict():
     measurements = transform(measurements)
 
     measurements = model.predict(measurements)
-
     for ind, _data in enumerate(data["data"]):
         _data["predict"] = measurements[(-new_data_len) + ind, 0]
 
@@ -70,25 +70,57 @@ def end():
 
 @app.route('/stats', methods=['POST', 'GET'])
 def statistics():
+    try:
+        session['username']
+    except KeyError:
+        return redirect(url_for('login'))
     with Database() as db:
         data = db.get_data_for_stats()
-    headers = ['measured_at', 'speed', 'fuel_consumption', 'android_id', 'created_at',
-               'avg_predict_fuel_consumption', 'avg_real_fuel_consumption',
-               'total_route_length',
-               'journeys_interval',
-               'avg_speed',
-               'std_speed',
-               'min_speed',
-               'max_speed',
-               'avg_fuel_consumption',
-               'std_fuel_consumption',
-               'min_fuel_consumption',
-               'max_fuel_consumption']
+    headers = ['id', 'android_id', 'created_at', 'avg_predict_fuel_consumption', 'avg_real_fuel_consumption',
+               'total_route_length', 'journeys_interval', 'avg_speed', 'std_speed', 'min_speed', 'max_speed',
+               'avg_fuel_consumption', 'std_fuel_consumption', 'min_fuel_consumption', 'max_fuel_consumption']
     print(data)
     return render_template('index.html',
                            headers=headers,
                            objects=data)
 
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
+@app.route('/logout')
+def logout():
+    try:
+        del session['username']
+    except KeyError:
+        pass
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def login_post():
+    name = request.form.get('name')
+    password = request.form.get('password')
+    with Database() as db:
+        user = db.check_is_user_exist(name)
+    if not user or not check_password_hash(user[2], password):
+        flash('Please check your login details and try again.')
+        return redirect(url_for('login'))
+
+    session['username'] = user[1]
+    return redirect(url_for('statistics'))
+
+@app.route('/stats/<id>', methods=['GET'])
+def measurements(id):
+    try:
+        session['username']
+    except KeyError:
+        return redirect(url_for('login'))
+    with Database() as db:
+        data = db.get_measurements(id)
+    headers = ['id', 'journey_id', 'measured_at', 'speed', 'fuel_consumption']
+    print(data)
+    return render_template('measurements.html',
+                           headers=headers,
+                           objects=data)
 if __name__ == "__main__":
     app.run()

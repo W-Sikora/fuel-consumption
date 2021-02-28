@@ -1,5 +1,15 @@
 import sqlite3
+from datetime import datetime
 
+class User:
+    is_authenticated = True
+    is_active = True
+
+    def __init__(self, user):
+        self.user = user
+
+    def get_id(self):
+        return self.user[0]
 
 class Database:
     def __init__(self):
@@ -16,13 +26,13 @@ class Database:
     
     def add_measurements(self, data, journey_id):
         for _data in data:
-            self.cursor.execute("INSERT INTO Measurements(journey_id, measured_at, speed, fuel_consumption) VALUES (?, ?, ?, ?)", (journey_id, _data["time"], _data["speed"], _data["predict"]))
+            self.cursor.execute("INSERT INTO Measurements(journey_id, measured_at, speed, fuel_consumption) VALUES (?, ?, ?, ?)", (journey_id, _data["time"], _data["speed"], int(_data["predict"])))
     
     def end_journey(self, id, data):
         self.cursor.execute("UPDATE Journeys SET avg_real_fuel_consumption = ? WHERE id = ?", (data, id))
     
     def get_data_for_stats(self):
-        return self.cursor.execute("SELECT measured_at, speed, fuel_consumption, android_id, created_at, avg_predict_fuel_consumption, avg_real_fuel_consumption, total_route_length, journeys_interval, avg_speed, std_speed, min_speed, max_speed, avg_fuel_consumption, std_fuel_consumption, min_fuel_consumption, max_fuel_consumption FROM Measurements JOIN Journeys").fetchall()
+        return self.cursor.execute("SELECT id, android_id, created_at,  avg_predict_fuel_consumption, avg_real_fuel_consumption, total_route_length, journeys_interval, avg_speed, std_speed, min_speed, max_speed, avg_fuel_consumption, std_fuel_consumption, min_fuel_consumption, max_fuel_consumption FROM Journeys").fetchall()
 
     def add_new_client(self, android_id, engine):
         try:
@@ -31,7 +41,7 @@ class Database:
             return 'MAC is in db'
     
     def add_new_journey(self, android_id):
-        self.cursor.execute("INSERT INTO Journeys (android_id) VALUES (?)", (android_id, ))
+        self.cursor.execute("INSERT INTO Journeys (android_id, created_at) VALUES (?, ?)", (android_id, datetime.now()))
         return self.cursor.lastrowid
 
     def update_client_engine(self, android_id, engine):
@@ -55,6 +65,15 @@ class Database:
         with open("database_structure.sql", "r") as dump:
             sql_as_string = dump.read()
             self.cursor.executescript(sql_as_string)
+            
+    def check_is_user_exist(self, name):
+        return self.cursor.execute("SELECT * FROM Users WHERE login = ?", (name, )).fetchone()
+
+    def get_user_by_id(self, id):
+        return self.cursor.execute("SELECT * FROM Users WHERE id = ?", (id, )).fetchone()
+
+    def get_measurements(self, id):
+        return self.cursor.execute("SELECT * FROM Measurements WHERE journey_id = ?", (id, )).fetchall()
 
 # with Database() as db:
 #     db.create_empty_database()
