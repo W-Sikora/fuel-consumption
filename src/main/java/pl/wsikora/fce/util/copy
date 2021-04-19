@@ -1,0 +1,138 @@
+package pl.wsikora.fce.util
+
+import android.location.Location
+import android.util.Log
+import java.util.*
+import kotlin.math.floor
+import kotlin.math.pow
+
+class Calculations {
+    private val locations = arrayListOf<Location>()
+    private val startTime = Calendar.getInstance().time
+    private var deltaTime = 0f
+    private var timeElapsed = 0f
+    private var latestDistance = 0f
+    private var totalDistance = 0f
+    private var latestSpeed = 0f
+    private var avgSpeed = 0f
+    private var error = 0f
+
+    fun add(location: Location) {
+        when (locations.size) {
+            0 -> locations.add(location)
+            1 -> {
+                locations.add(location)
+                error = location.accuracy.pow(2)
+                calcValues()
+            }
+            else -> {
+                locations[0] = locations[1]
+                locations[1] = location
+                runKalmanFilter(latestSpeed)
+                calcValues()
+            }
+        }
+    }
+
+    fun timeElapsed(): String {
+        val hours = convertSecondsToHours(timeElapsed).toInt()
+        val minutes = floor((value - hours) * 60).toInt()
+        return if (minutes < 10) {
+            "${hours}:0$minutes"
+        } else {
+            "${hours}:$minutes"
+        }
+    }
+
+    fun totalDistance(): String {
+        return convertMetersToKilometers(totalDistance)
+            .toFormattedString(2)
+    }
+
+    fun latestSpeed(): String {
+        return convertMetersPerSecondToKilometersPerHour(latestSpeed)
+            .toFormattedString(1)
+    }
+
+    fun avgSpeed(): String {
+        return convertMetersPerSecondToKilometersPerHour(avgSpeed)
+            .toFormattedString(1)
+    }
+
+    fun error(): String {
+        return error.pow(0.5f).toFormattedString(1)
+    }
+
+    private fun calcValues() {
+        calcDeltaTime()
+        calcTimeElapsed()
+        calcDistance()
+        calcTotalDistance()
+        calcSpeed()
+        calcAvgSpeed()
+    }
+
+    private fun calcDeltaTime() {
+        deltaTime = convertNanosecondsToSeconds(locations[1].elapsedRealtimeNanos
+                .minus(locations[0].elapsedRealtimeNanos)
+        )
+        Log.d("interval", "$deltaTime [s]")
+    }
+
+    private fun calcTimeElapsed() {
+        timeElapsed = convertNanosecondsToSeconds(Calendar.getInstance().time.time
+            .minus(startTime.time))
+        Log.d("total interval", "$timeElapsed [s]")
+    }
+
+    private fun calcDistance() {
+        latestDistance = locations[1].distanceTo(locations[0])
+        Log.d("latest distance", "$latestDistance [m]")
+    }
+
+    private fun calcTotalDistance() {
+        totalDistance += latestDistance
+        Log.d("total distance", "$totalDistance [m]")
+    }
+
+    private fun calcSpeed() {
+        latestSpeed = latestDistance.div(deltaTime)
+        Log.d("latest speed", "$latestSpeed [m/s]")
+    }
+
+    private fun calcAvgSpeed() {
+        avgSpeed = totalDistance / timeElapsed
+        Log.d("avg speed", "$avgSpeed [m/s]")
+    }
+
+    private fun runKalmanFilter(speed: Float) {
+        if (deltaTime > 0) {
+            error += deltaTime * speed.pow(2)
+        }
+        val gain = error / (error + locations[1].accuracy.pow(2))
+        locations[1].latitude += gain * (locations[1].latitude - locations[0].latitude)
+        locations[1].longitude += gain * (locations[1].longitude - locations[0].longitude)
+        error *= (1 - gain)
+    }
+
+    private fun convertNanosecondsToSeconds(value: Long): Float {
+        return value.div(1_000_000_000f)
+    }
+
+    private fun convertSecondsToHours(value: Float): Float {
+        return value.div(3_600f)
+    }
+
+    private fun convertMetersToKilometers(value: Float): Float {
+        return value.div(1_000f)
+    }
+
+    private fun convertMetersPerSecondToKilometersPerHour(value: Float): Float {
+        return value.times(3.6f)
+    }
+
+    private fun Float.toFormattedString(decimalPlaces: Int): String {
+        return String.format(Locale.US, "%.${decimalPlaces}f", this)
+    }
+
+}

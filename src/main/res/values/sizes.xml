@@ -1,0 +1,5 @@
+<resources>
+    <dimen  name="h1">24sp</dimen >
+    <dimen  name="h2">19sp</dimen >
+    <dimen  name="p">17sp</dimen >
+</resources>

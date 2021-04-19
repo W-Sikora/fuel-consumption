@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">FCE</string>
+    <string name="hint">FCE</string>
+
+    <!--Dashboard-->
+    <string name="dashboard_section">Dashboard</string>
+
+    <string name="dashboard_fuel_consumption_card_header">Spalanie</string>
+    <string name="dashboard_fuel_consumption_first_header">chwilowe</string>
+    <string name="dashboard_fuel_consumption_second_header">średnie</string>
+    <string name="dashboard_fuel_consumption_unit">l/100km</string>
+
+    <string name="dashboard_speed_card_header">Szybkość</string>
+    <string name="dashboard_speed_first_header">chwilowa</string>
+    <string name="dashboard_speed_second_header">średnia</string>
+    <string name="dashboard_speed_unit">km/h</string>
+
+    <string name="dashboard_general_card_header">Ogólne</string>
+    <string name="dashboard_general_first_header">całkowity dystans</string>
+    <string name="dashboard_general_distance_unit">km</string>
+    <string name="dashboard_general_second_header">czas przejazdu</string>
+    <string name="dashboard_general_time_unit">h</string>
+
+    <string name="dashboard_location_card_header">Lokalizacja</string>
+    <string name="dashboard_location_first_header">szerokość</string>
+    <string name="dashboard_location_second_header">długość </string>
+
+    <string name="dashboard_button">zakończ trasę</string>
+
+
+</resources>

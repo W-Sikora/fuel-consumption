@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/main"
+        android:orientation="vertical"
+        android:weightSum="20"
+        tools:context=".DashboardActivity">
+
+        <include
+            android:id="@+id/dashboardHeader"
+            layout="@layout/header" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15"
+            android:background="@drawable/card_background"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="6dp"
+                android:layout_marginTop="15dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="5dp"
+                    android:layout_marginVertical="5dp"
+                    android:orientation="vertical">
+
+                    <include android:id="@+id/fuelConsumption"
+                        layout="@layout/card"/>
+
+                    <include android:id="@+id/speed"
+                        layout="@layout/card"/>
+
+                    <include android:id="@+id/general"
+                        layout="@layout/card"/>
+
+                    <include android:id="@+id/location"
+                        layout="@layout/card"/>
+
+                    <include android:id="@+id/accuracy"
+                        layout="@layout/card"/>
+
+                </LinearLayout>
+
+            </ScrollView>
+
+        </LinearLayout>
+
+        <include layout="@layout/footer"
+            android:id="@+id/dashboardFooter" />
+
+    </LinearLayout>
+</layout>
